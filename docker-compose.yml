@@ -1,0 +1,16 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  back:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nabibox-back
+    ports:
+      - "3000:3000"
+    volumes:
+      - .nabibox-back:/usr/src/app
+#    .env
+#    environment:
+#      - UPLOAD_PATH=
