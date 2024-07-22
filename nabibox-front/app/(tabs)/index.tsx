@@ -1,26 +1,52 @@
-import {Image, StyleSheet, Platform, Text} from 'react-native';
+import {Image, StyleSheet, Platform, Text, SafeAreaView, Button, ScrollView, View} from 'react-native';
+import * as MediaLibrary from 'expo-media-library';
+import {useEffect, useState} from "react";
 
 export default function HomeScreen() {
+  const [albums, setAlbums] = useState(null);
+  const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
+
+  async function getAlbums() {
+    if (permissionResponse.status !== 'granted') {
+      await requestPermission();
+    }
+    const fetchedAlbums = await MediaLibrary.getAlbumsAsync({
+      includeSmartAlbums: true,
+    });
+    setAlbums(fetchedAlbums);
+  }
+
   return (
-    <Text>123</Text>
+      <SafeAreaView >
+        <Button onPress={getAlbums} title="Get albums" />
+        <ScrollView>
+          {albums && albums.map((album) => <AlbumEntry album={album} />)}
+        </ScrollView>
+      </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+function AlbumEntry({ album }) {
+  const [assets, setAssets] = useState([]);
+
+  useEffect(() => {
+    async function getAlbumAssets() {
+      const albumAssets = await MediaLibrary.getAssetsAsync({ album });
+      setAssets(albumAssets.assets);
+    }
+    getAlbumAssets();
+  }, [album]);
+
+  return (
+      <View key={album.id} style={styles.albumContainer}>
+        <Text>
+          {album.title} - {album.assetCount ?? 'no'} assets
+        </Text>
+        <View style={styles.albumAssetsContainer}>
+          {assets && assets.map((asset) => (
+              <Image source={{ uri: asset.uri }} width={50} height={50} />
+          ))}
+        </View>
+      </View>
+  );
+}
