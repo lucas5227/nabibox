@@ -10,11 +10,13 @@ import {
     Dimensions
 } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
-import { Feather } from 'react-native-vector-icons'; // Feather 아이콘 임포트
+import { Feather } from 'react-native-vector-icons';
+import {file} from "@babel/types"; // Feather 아이콘 임포트
 
 const { width } = Dimensions.get('window'); // 화면의 가로 폭
 
 export default function HomeScreen() {
+    const [cloudData, setCloudData] = useState({});
     const [albums, setAlbums] = useState({});
     const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
 
@@ -55,8 +57,36 @@ export default function HomeScreen() {
     }
 
     async function syncWithServer() {
-        // 이미지 서버와 싱크하는 로직을 여기에 추가하세요.
-        console.log('Syncing with server...');
+        const url = 'http://angelicagrace.shop/list/sadmin'; // API URL
+
+        try {
+            console.log('Syncing with server...');
+
+            // 데이터 요청
+            const response = await fetch(url);
+
+            // 응답 상태 체크
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // JSON 데이터 파싱
+            const data = await response.json();
+            const tmp = {};
+            data.data.forEach((res, idx) => {
+                res.children.forEach((file, fileIdx) => {
+                    if (!tmp[res.name]) {
+                        tmp[res.name] = []; // tmp[idx] 배열이 존재하지 않으면 초기화합니다.
+                    }
+                    tmp[res.name][fileIdx] = file.name; // 파일 이름을 저장합니다.
+                });
+            });
+            setCloudData(tmp);
+            // 데이터 출력
+            console.log('Data from server:', cloudData);
+        } catch (error) {
+            console.error('Failed to fetch data from server:', error);
+        }
     }
 
     function handleUpload(photoId) {
