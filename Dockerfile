@@ -3,10 +3,10 @@ FROM node:20
 
 WORKDIR /usr/src/app
 
-COPY .nabibox-back/package*.json .
+COPY ./nabibox-back/package*.json .
 RUN npm install
 
-COPY .nabibox-back .
+COPY ./nabibox-back .
 
 EXPOSE 3000
 
