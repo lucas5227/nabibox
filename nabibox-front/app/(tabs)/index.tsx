@@ -11,14 +11,35 @@ import {
 } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { Feather } from 'react-native-vector-icons';
-import {file} from "@babel/types"; // Feather 아이콘 임포트
 
 const { width } = Dimensions.get('window'); // 화면의 가로 폭
 
 export default function HomeScreen() {
-    const [cloudData, setCloudData] = useState({});
+    const [cloudView, setCloudView] = useState({});
     const [albums, setAlbums] = useState({});
     const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
+    const [cloudFiles, setCloudFiles] = useState([]);
+
+    const mergeAlbum = (storage, cloud) => {
+        let tmp = [];
+        let tmp2 = storage;
+        Object.keys(cloud).forEach((k, i) => {
+            const date = new Date(k);
+            const timestamp = Math.floor(date.getTime() / 1000);
+            const cloudFilename = cloud[k].toString();
+            const filenameParts = cloudFilename.split('|:|');
+            const extension = cloudFilename.split('.').pop();
+            const filename = filenameParts[0] + '.' + extension;
+            if(storage.hasOwnProperty(k)){
+                //추가
+            } else {
+                // tmp2.k = {"creationTime": timestamp,"mediaType": "photo", "filename": filename};
+            }
+        });
+        setCloudView(tmp);
+        console.log(tmp2);
+        return storage;
+    };
 
     useEffect(() => {
         getAlbums();
@@ -52,8 +73,7 @@ export default function HomeScreen() {
                 photos[dateKey].push({ ...asset, localUri: assetInfo.localUri });
             }
         }
-
-        setAlbums(photos);
+        setAlbums(mergeAlbum(photos, cloudFiles));
     }
 
     async function syncWithServer() {
@@ -81,9 +101,10 @@ export default function HomeScreen() {
                     tmp[res.name][fileIdx] = file.name; // 파일 이름을 저장합니다.
                 });
             });
-            setCloudData(tmp);
+            setAlbums(mergeAlbum(albums, tmp));
+
             // 데이터 출력
-            console.log('Data from server:', cloudData);
+            console.log('Data from server:', cloudFiles);
         } catch (error) {
             console.error('Failed to fetch data from server:', error);
         }
