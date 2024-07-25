@@ -22,7 +22,7 @@ export default function HomeScreen() {
 
     const mergeAlbum = (storage, cloud) => {
         let tmp = [];
-        let tmp2 = storage;
+        let tmp2 = {...storage};
         Object.keys(cloud).forEach((k, i) => {
             const date = new Date(k);
             const timestamp = Math.floor(date.getTime() / 1000);
@@ -32,12 +32,15 @@ export default function HomeScreen() {
             const filename = filenameParts[0] + '.' + extension;
             if(storage.hasOwnProperty(k)){
                 //추가
+                Object.keys(storage[k]).forEach((k_s, i_s) => {
+                    console.log(k_s);
+                });
             } else {
-                // tmp2.k = {"creationTime": timestamp,"mediaType": "photo", "filename": filename};
+                tmp2[k] = [{"creationTime": timestamp,"mediaType": "photo", "filename": filename, "id": 123, "localUri": 123}];
             }
         });
         setCloudView(tmp);
-        console.log(tmp2);
+        // console.log(tmp2);
         return storage;
     };
 
@@ -123,7 +126,7 @@ export default function HomeScreen() {
 
     function renderPhotoGrid() {
         return (
-            <View style={styles.photoContainer}>
+            <View>
                 {Object.keys(albums).map(dateKey => {
                     const photosForDate = albums[dateKey];
                     const date = new Date(dateKey);
@@ -261,4 +264,5 @@ const styles = StyleSheet.create({
         justifyContent: 'center', // 아이콘이 버튼 중앙에 위치하도록 설정
         marginLeft: 10, // 버튼 간의 간격을 추가
     },
+
 });
