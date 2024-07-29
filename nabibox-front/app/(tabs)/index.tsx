@@ -113,13 +113,45 @@ export default function HomeScreen() {
         }
     }
 
-    function handleUpload(photoId) {
-        // 업로드 로직을 여기에 추가하세요.
+    async function handleUpload(photoId) {
         console.log(`Uploading photo with ID: ${photoId}`);
+
+        // 선택된 사진의 로컬 URI를 찾습니다.
+        const photo = Object.values(albums).flat().find(photo => photo.id === photoId);
+        if (!photo) {
+            console.error('Photo not found');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('uploadFile', {
+            uri: photo.localUri,
+            name: photo.filename,
+            type: 'image/jpeg', // 파일의 타입을 지정합니다. 필요에 따라 변경하세요.
+        });
+
+        try {
+            const response = await fetch('http://angelicagrace.shop/upload/sadmin', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Upload successful:', result);
+            } else {
+                console.error( response);
+                console.error('Upload failed:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+        }
     }
 
     async function handleUploadAll() {
-        // 모든 사진을 업로드하는 로직을 여기에 추가하세요.
         Object.values(albums).flat().forEach(photo => handleUpload(photo.id));
         console.log('Uploading all photos...');
     }
